@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatisboot.mapper.DepartmentMapper">
+    <resultMap id="DepMap" type="com.example.mybatisboot.entity.Department">
+        <id column="department_id" property="departmentId"/>
+        <result column="department_name" property="departmentName"/>
+    </resultMap>
+    <select id="getAllDepartments" resultMap="DepMap">
+        select * from departments
+    </select>
+
+    <select id="getDeptById" resultMap="DepMap">
+        select * from departments where department_id = #{id}
+    </select>
+
+    <!--查询部门的同时，查询出属于该部门的员工-->
+    <resultMap id="DeptAndEmp" type="com.example.mybatisboot.entity.Department">
+        <id column="department_id" property="departmentId"/>
+        <result column="department_name" property="departmentName"/>
+        <collection property="emps" ofType="com.example.mybatisboot.entity.Employee">
+            <id column="id" property="id"/>
+            <result column="last_name" property="lastName"/>
+            <result column="salary" property="salary"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="getDeptAndEmps" resultMap="DeptAndEmp">
+        select d.department_id, d.department_name, e.id, e.last_name, e.salary
+        from departments d left join employees e
+        on d.department_id = e.dpt_id
+        where department_id = #{id}
+    </select>
+
+    <!--分步查询-->
+    <resultMap id="GetDeptStep" type="com.example.mybatisboot.entity.Department">
+        <id column="department_id" property="departmentId"/>
+        <result column="department_name" property="departmentName"/>
+        <collection property="emps"
+                    select="com.example.mybatisboot.mapper.EmployeeMapper.getEmployeeByDeptId"
+                    column="department_id"
+                    fetchType="lazy"><!--将哪列的值传入-->
+        </collection>
+    </resultMap>
+
+    <select id="getDeptStep" resultMap="GetDeptStep">
+        select department_id, department_name
+        from departments
+        where department_id = #{id}
+    </select>
+</mapper>

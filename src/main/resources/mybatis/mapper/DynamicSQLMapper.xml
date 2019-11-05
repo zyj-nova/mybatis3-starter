@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatisboot.mapper.DynamicSQLMapper">
+    <resultMap type="com.example.mybatisboot.entity.Employee" id="EmpAndDept">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="salary" property="salary"/>
+        <association property="dept" select="com.example.mybatisboot.mapper.DepartmentMapper.getDeptById"
+                     column="dpt_id"></association>
+    </resultMap>
+    <select id="getEmpByColumn" resultMap="EmpAndDept">
+        select * from employees
+        <trim prefix="where" suffixOverrides="and">
+            <if test="id!=null">
+                id = #{id} and
+            </if>
+            <if test="lastName!=null and lastName!=''">
+                last_name like #{lastName} and
+            </if>
+            <if test="salary!=null">
+                salar = #{salary} and
+            </if>
+            <if test="deptid!=null">
+                dpt_id = #{deptid}
+            </if>
+        </trim>
+    </select>
+
+    <resultMap id="emp" type="com.example.mybatisboot.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="salary" property="salary"/>
+    </resultMap>
+    <select id="getEmpByOneColumn" resultMap="emp">
+        select * from employees
+        <where>
+            <choose>
+                <when test="id!=null">
+                    id = #{id}
+                </when>
+                <when test="lastName!=null">
+                    last_name like #{lastName}
+                </when>
+                <otherwise>
+                    salary > 6000.0
+                </otherwise>
+            </choose>
+        </where>
+
+    </select>
+
+    <update id="updateEmpByDynamicSQL" >
+        update employees
+        <set>
+            <if test="lastName!=null">
+                last_name = #{lastName},
+            </if>
+            <if test="salary!=null">
+                salary = #{salary}
+            </if>
+        </set>
+<!--  使用trim也可以实现,去掉多余的,
+<trim prefix="set" suffixOverrides=",">-->
+<!--            <if test="lastName!=null">-->
+<!--                last_name = #{lastName},-->
+<!--            </if>-->
+<!--            <if test="salary!=null">-->
+<!--                salary = #{salary}-->
+<!--            </if>-->
+<!--        </trim>-->
+        where id = #{id}
+    </update>
+
+    <select id="getEmpsByConditionForeach" resultMap="emp">
+        select * from employees
+        <foreach collection="ids" item="item_id" separator=","
+                 open="where id in(" close=")">
+            #{item_id}
+        </foreach>
+    </select>
+</mapper>

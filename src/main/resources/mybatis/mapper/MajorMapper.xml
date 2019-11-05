@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatisboot.mapper.MajorMapper">
+    <!--select只有一个参数时，#{}内可以取任意名字-->
+    <select id="getMajorById" resultType="com.example.mybatisboot.entity.Major" >
+        select * from major
+        where majorid = #{id}
+    </select>
+
+    <!--当返回集合类型list、set时,resultType为集合中元素的类型-->
+    <select id="getAllMajors" resultType="com.example.mybatisboot.entity.Major">
+        select * from major
+    </select>
+
+    <!-- useGeneratedKeys，将生成的自增主键返回，封装在keyProperty中,false时，拿不到自动生成的主键-->
+    <insert id="addMajor" useGeneratedKeys="true" keyProperty="majorId">
+        insert into major(majorname)
+        values(#{majorName})
+    </insert>
+
+    <!--当select中存在多个参数时的情况
+    mybatis默认创建一个map
+    key:para1,param2...
+    value:传过去的值...
+    要么在接口参数上加上@Param注解，指定参数名称
+    <select id="getMajorByIdAndName" resultType="com.example.mybatisboot.entity.Major">
+        select * from major
+        where majorid = #{param1} and majorname = #{param2}
+    </select>
+    -->
+    <select id="getMajorByIdAndName" resultType="com.example.mybatisboot.entity.Major">
+        select * from major
+        where majorid = #{id} and majorname = #{name}
+    </select>
+
+    <!--mybatis自动封装list类型和array类型，当传入参数为list集合类型，取值方法为#{list[0]}
+        传入数组类型，取值array[0]
+    -->
+    <!--传入Major对象，注意取值方式-->
+    <update id="updateMajor">
+        update major
+        set majorname = #{major.majorName}
+        where majorid = #{major.majorId}
+    </update>
+
+    <update id="updateMajors">
+        update major
+        set majorname = #{list[0].majorName}
+        where majorid = #{list[0].majorId}
+    </update>
+
+    <select id="getMajorByArray" resultType="com.example.mybatisboot.entity.Major">
+        select * from major
+        where majorid = #{array[0]}
+    </select>
+
+    <!--$/#都可以取值 ${}、#{}
+        区别：
+        #{}，以预编译形式，将参数设置到sql语句中，相当于一个占位符,可以防止sql注入
+        ${},取出的值直接拼装在sql中，
+        原生jdbc不支持预编译的地方，可以使用$
+        当传入参数为map类型，#{map中的key}
+    -->
+
+    <select id="getMajorByMap" resultType="com.example.mybatisboot.entity.Major">
+        select * from ${tablename}
+        where majorid = #{id}
+    </select>
+
+    <!--返回map类型中value的类型-->
+    <select id="getMajorReturnMap" resultType="com.example.mybatisboot.entity.Major">
+        select * from  major
+    </select>
+    <!--自定义结果集映射规则，resultMap和resultType不可同时使用
+        type：自定义规则的java类型
+        id:唯一标识符
+        column:指定哪一列
+        property：指定对应javaBean类型的属性
+    -->
+    <resultMap type="com.example.mybatisboot.entity.Major" id="MajorMap">
+        <id column="majorid" property="majorId"/>
+        <result column="majorname" property="majorName"></result>
+    </resultMap>
+</mapper>

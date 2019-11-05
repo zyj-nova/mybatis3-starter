@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatisboot.mapper.EmployeeMapper">
+    <!--自定义结果集-->
+    <resultMap type="com.example.mybatisboot.entity.Employee" id="EmpAndDept">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="salary" property="salary"/>
+        <result column="dpt_id" property="dept.departmentId"/>
+        <result column="department_name" property="dept.departmentName"/>
+    </resultMap>
+    <!--同时可以使用association指定级联的javabean信息-->
+    <resultMap type="com.example.mybatisboot.entity.Employee" id="EmpAndDept2">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="salary" property="salary"/>
+        <!--peoperty:指定哪个属性是联合的对象-->
+
+        <association property="dept" javaType="com.example.mybatisboot.entity.Department">
+            <!--column指定的是employee表中外键属性-->
+            <id column="dpt_id" property="departmentId"/>
+            <result column="department_name" property="departmentName"/>
+        </association>
+    </resultMap>
+
+    <!--使用select  分布查询 支持延迟加载
+    1.先查出emp对象
+    2.再根据emp对象的dpt对象查询
+    -->
+    <resultMap id="EmpAndDept3" type="com.example.mybatisboot.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="salary" property="salary"/>
+        <association property="dept" select="com.example.mybatisboot.mapper.DepartmentMapper.getDeptById"
+                     column="dpt_id"></association>
+    </resultMap>
+    <!--查询员工同时，查出部门信息-->
+    <select id="getEmpAndDept" resultMap="EmpAndDept3">
+        SELECT e.id ,e.last_name,e.salary,e.dpt_id,d.department_name
+        FROM employees e JOIN departments d
+        ON e.dpt_id = d.department_id
+        WHERE e.id = #{id}
+    </select>
+
+    <select id="getEmployeeByDeptId" resultType="com.example.mybatisboot.entity.Employee">
+        select * from employees where dpt_id = #{id}
+    </select>
+   
+</mapper>
